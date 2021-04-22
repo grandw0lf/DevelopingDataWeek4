@@ -1,0 +1,104 @@
+---
+title: "Developing Data Product - Week 4 Assignment"
+author: "George Farmer"
+date: "4/17/2021"
+output:
+  slidy_presentation: default
+  ioslides_presentation: default
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+This is a task for the data science coursera course about developing data products for week 4. As part of this, I have created a shiny app and deployed it on the shiny server. The link is https://grandw0lf.shinyapps.io/OldFaithful/. The code can be found at https://github.com/grandw0lf/DevelopingDataWeek4.
+
+-----------------------------------------------------------------------
+
+This app explores the Old Faithful Geyser Data and puts in into a easy to navigate format with a navigation bar and a slider indicating times between eruptions.
+
+-----------------------------------------------------------------------
+
+## Server code
+
+```{r echo = TRUE}
+library("shiny")
+library("googleVis")
+
+
+# Define server logic required to draw a histogram
+shinyServer(function(input, output) {
+
+    output$distPlot <- renderPlot({
+
+        # generate bins based on input$bins from ui.R
+        x    <- faithful[, 2]
+        bins <- seq(min(x), max(x), length.out = input$bins + 1)
+
+        # draw the histogram with the specified number of bins
+        hist(x, breaks = bins, col = faithful$eruptions, border = "forestgreen",
+             xlab = "Waiting time to next eruption (in mins)",
+             main = "Histogram of waiting times")
+    })
+
+})
+```
+
+
+-----------------------------------------------------------------------
+
+## UI Code
+
+```{r echo = TRUE}
+## ui.R ##
+library("shiny")
+library("googleVis")
+library("dplyr")
+library("shinydashboard")
+
+
+
+
+#Shiny Dashboard page
+ui <- dashboardPage(
+    dashboardHeader(),
+    dashboardSidebar(
+        sidebarMenu(
+            menuItem("Intro", tabName = "Intro", icon = icon("th-list", lib= "glyphicon")),
+            menuItem("Old Faithful", tabName = "Faithful", icon = icon("th-list", lib= "glyphicon"))
+        )
+    ),
+    dashboardBody(
+        tabItems(
+            # First tab content
+            tabItem(tabName = "Intro",
+                    h2("Old Faithful Waiting times"),
+                    h5("App by George Farmer"),
+                    h6("Select the Faithful tab on the side and use the slider to
+               determine when Old Faithful will erupt.")
+            ),
+            tabItem(tabName = "Faithful",
+                    box(
+                        # Input: Slider for the number of bins ----
+                        sliderInput(inputId = "bins",
+                                    label = "Number of bins:",
+                                    min = 5,
+                                    max = 50,
+                                    value = 30)
+                        
+                    ),
+                    
+                    box(
+                        ##Histogram Plot
+                        plotOutput(outputId = "distPlot")
+                        
+                    )
+            )
+        )
+    )
+)
+```
+
+
